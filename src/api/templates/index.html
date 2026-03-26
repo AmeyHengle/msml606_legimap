@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LegiMap — Legal Citation Explorer</title>
+
+<!-- vis.js for network graph -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
+<link  href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet">
+
+<!-- Google Fonts: EB Garamond (display) + DM Mono (data) -->
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+/* ── Design tokens ────────────────────────────────────────────────────── */
+:root {
+  --navy:       #0d1b2a;
+  --navy-mid:   #152438;
+  --navy-light: #1e3352;
+  --gold:       #c9a84c;
+  --gold-dim:   #8a6f35;
+  --gold-pale:  #f5e6c0;
+  --parchment:  #fdf6e3;
+  --ink:        #1a1a2e;
+  --muted:      #6b7e96;
+  --accent:     #e07b54;
+  --green:      #4caf82;
+  --border:     rgba(201,168,76,0.18);
+  --panel-bg:   rgba(21,36,56,0.95);
+  --radius:     4px;
+  --font-serif: 'EB Garamond', Georgia, serif;
+  --font-mono:  'DM Mono', 'Courier New', monospace;
+  --shadow:     0 8px 32px rgba(0,0,0,0.45);
+  --glow:       0 0 20px rgba(201,168,76,0.15);
+}
+
+/* ── Reset & base ─────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--navy);
+  color: var(--gold-pale);
+  font-family: var(--font-serif);
+  font-size: 16px;
+  overflow: hidden;
+}
+
+/* Fine diagonal texture overlay */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 40px,
+      rgba(201,168,76,0.015) 40px,
+      rgba(201,168,76,0.015) 41px
+    );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Layout shell ─────────────────────────────────────────────────────── */
+#app {
+  display: grid;
+  grid-template-rows: 64px 1fr;
+  grid-template-columns: 340px 1fr 300px;
+  grid-template-areas:
+    "header  header  header"
+    "sidebar graph   panel";
+  height: 100vh;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Header ───────────────────────────────────────────────────────────── */
+#header {
+  grid-area: header;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 0 28px;
+  background: rgba(13,27,42,0.96);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+}
+
+.logo {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.logo-text {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--gold);
+}
+
+.logo-sub {
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Search bar */
+#search-wrap {
+  flex: 1;
+  max-width: 520px;
+  position: relative;
+}
+
+#search-input {
+  width: 100%;
+  padding: 10px 16px 10px 40px;
+  background: var(--navy-mid);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--gold-pale);
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#search-input:focus {
+  border-color: var(--gold-dim);
+  box-shadow: 0 0 0 3px rgba(201,168,76,0.08);
+}
+
+#search-input::placeholder { color: var(--muted); font-style: italic; }
+
+.search-icon {
+  position: absolute;
+  left: 12px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  font-size: 0.9rem;
+  pointer-events: none;
+}
+
+/* Search dropdown */
+#search-dropdown {
+  position: absolute;
+  top: calc(100% + 6px); left: 0; right: 0;
+  background: var(--navy-mid);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  max-height: 320px;
+  overflow-y: auto;
+  display: none;
+  z-index: 200;
+}
+
+#search-dropdown.visible { display: block; }
+
+.search-item {
+  padding: 10px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(201,168,76,0.07);
+  transition: background 0.15s;
+}
+
+.search-item:last-child { border-bottom: none; }
+.search-item:hover { background: var(--navy-light); }
+
+.search-item-name {
+  font-size: 0.92rem;
+  color: var(--gold-pale);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search-item-meta {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.badge {
+  display: inline-block;
+  background: rgba(201,168,76,0.12);
+  color: var(--gold);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  padding: 1px 6px;
+  border-radius: 2px;
+  margin-left: 4px;
+}
+
+/* Header controls */
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.ctrl-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+select {
+  background: var(--navy-mid);
+  border: 1px solid var(--border);
+  color: var(--gold-pale);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  padding: 5px 10px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  outline: none;
+}
+
+.btn-explore {
+  padding: 9px 20px;
+  background: var(--gold);
+  color: var(--navy);
+  font-family: var(--font-serif);
+  font-size: 0.92rem;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.btn-explore:hover { background: var(--gold-pale); }
+.btn-explore:active { transform: scale(0.98); }
+.btn-explore:disabled { opacity: 0.4; cursor: default; }
+
+/* ── Left sidebar ─────────────────────────────────────────────────────── */
+#sidebar {
+  grid-area: sidebar;
+  background: var(--panel-bg);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-title {
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+  padding: 16px 20px 10px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+/* Seed card */
+#seed-card {
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border);
+  display: none;
+}
+
+#seed-card.visible { display: block; }
+
+.seed-badge {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+#seed-name {
+  font-size: 1.08rem;
+  font-weight: 600;
+  color: var(--gold-pale);
+  line-height: 1.35;
+  margin-bottom: 4px;
+}
+
+#seed-cite {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+
+.seed-stats {
+  display: flex;
+  gap: 16px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-val {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  color: var(--gold);
+  font-weight: 500;
+}
+
+.stat-label {
+  font-size: 0.68rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Ranked results list */
+#results-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.result-item {
+  padding: 11px 20px;
+  border-bottom: 1px solid rgba(201,168,76,0.06);
+  cursor: pointer;
+  transition: background 0.15s;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.result-item:hover { background: rgba(255,255,255,0.03); }
+.result-item.selected { background: rgba(201,168,76,0.07); }
+
+.result-rank {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--muted);
+  min-width: 20px;
+  padding-top: 2px;
+  text-align: right;
+}
+
+.result-body { flex: 1; min-width: 0; }
+
+.result-name {
+  font-size: 0.88rem;
+  color: var(--gold-pale);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.35;
+}
+
+.result-meta {
+  display: flex;
+  gap: 8px;
+  margin-top: 3px;
+  align-items: center;
+}
+
+.result-cite {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+
+.score-bar-wrap {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.score-bar-bg {
+  flex: 1;
+  height: 3px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.score-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+.score-val {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--gold-dim);
+  min-width: 30px;
+}
+
+/* Empty / loading states */
+.state-msg {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--muted);
+  font-style: italic;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+/* ── Graph canvas ─────────────────────────────────────────────────────── */
+#graph-wrap {
+  grid-area: graph;
+  position: relative;
+  overflow: hidden;
+  background: var(--navy);
+}
+
+/* Radial glow from centre */
+#graph-wrap::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(201,168,76,0.04) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+#network {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+/* Graph controls */
+#graph-controls {
+  position: absolute;
+  bottom: 16px; right: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 10;
+}
+
+.graph-btn {
+  width: 34px; height: 34px;
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  color: var(--gold);
+  border-radius: var(--radius);
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.graph-btn:hover { background: var(--navy-light); }
+
+/* Legend */
+#legend {
+  position: absolute;
+  bottom: 16px; left: 16px;
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  font-size: 0.72rem;
+  z-index: 10;
+}
+
+.legend-title {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.legend-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+  color: var(--gold-pale);
+}
+
+.legend-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Search time chip */
+#perf-chip {
+  position: absolute;
+  top: 12px; right: 16px;
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 4px 10px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--muted);
+  z-index: 10;
+  display: none;
+}
+
+/* Empty graph placeholder */
+#graph-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.placeholder-glyph {
+  font-size: 3rem;
+  opacity: 0.12;
+}
+
+.placeholder-text {
+  text-align: center;
+  color: var(--muted);
+  font-style: italic;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  max-width: 280px;
+}
+
+/* ── Right panel (case detail) ────────────────────────────────────────── */
+#detail-panel {
+  grid-area: panel;
+  background: var(--panel-bg);
+  border-left: 1px solid var(--border);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+#detail-content {
+  padding: 20px;
+  flex: 1;
+}
+
+.detail-empty {
+  color: var(--muted);
+  font-style: italic;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  padding-top: 8px;
+}
+
+.detail-section {
+  margin-bottom: 20px;
+}
+
+.detail-label {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.detail-value {
+  font-size: 0.88rem;
+  color: var(--gold-pale);
+  line-height: 1.5;
+}
+
+.detail-name {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--gold-pale);
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+
+.detail-cite-big {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--gold);
+  margin-bottom: 16px;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.metric-box {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+}
+
+.metric-val {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  color: var(--gold);
+  font-weight: 500;
+}
+
+.metric-lbl {
+  font-size: 0.65rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 2px;
+}
+
+.refs-list {
+  list-style: none;
+}
+
+.ref-item {
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(201,168,76,0.06);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.ref-item:hover { color: var(--gold); }
+.ref-item:last-child { border-bottom: none; }
+
+/* ── Loading spinner ──────────────────────────────────────────────────── */
+#loading-overlay {
+  position: fixed; inset: 0;
+  background: rgba(13,27,42,0.85);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 500;
+  display: none;
+}
+
+.spinner {
+  width: 36px; height: 36px;
+  border: 2px solid var(--border);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading-text {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+}
+
+/* ── Footer stat bar ──────────────────────────────────────────────────── */
+#stat-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 26px;
+  background: rgba(13,27,42,0.98);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 24px;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--muted);
+  z-index: 50;
+}
+
+.stat-chip { display: flex; align-items: center; gap: 5px; }
+.stat-chip span { color: var(--gold); }
+
+/* ── Scrollbar styling ────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--navy-light); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold-dim); }
+</style>
+</head>
+
+<body>
+<div id="app">
+
+  <!-- ── Header ──────────────────────────────────────────────────────── -->
+  <header id="header">
+    <div class="logo">
+      <span class="logo-text">LegiMap</span>
+      <span class="logo-sub">Citation Explorer</span>
+    </div>
+
+    <div id="search-wrap">
+      <span class="search-icon">⚖</span>
+      <input
+        id="search-input"
+        type="text"
+        placeholder="Search by case name or citation…  e.g. Roe v. Wade"
+        autocomplete="off"
+      >
+      <div id="search-dropdown"></div>
+    </div>
+
+    <div class="header-controls">
+      <span class="ctrl-label">Depth</span>
+      <select id="depth-select">
+        <option value="2">2 hops</option>
+        <option value="3" selected>3 hops</option>
+        <option value="4">4 hops</option>
+      </select>
+
+      <span class="ctrl-label">Results</span>
+      <select id="k-select">
+        <option value="5">Top 5</option>
+        <option value="10" selected>Top 10</option>
+        <option value="15">Top 15</option>
+      </select>
+
+      <button class="btn-explore" id="explore-btn" disabled>
+        Explore →
+      </button>
+    </div>
+  </header>
+
+  <!-- ── Left sidebar ────────────────────────────────────────────────── -->
+  <aside id="sidebar">
+    <div class="panel-title">Seed Case</div>
+
+    <div id="seed-card">
+      <div class="seed-badge">▶ Seed</div>
+      <div id="seed-name">—</div>
+      <div id="seed-cite">—</div>
+      <div class="seed-stats">
+        <div class="stat">
+          <span class="stat-val" id="seed-in">—</span>
+          <span class="stat-label">Cited by</span>
+        </div>
+        <div class="stat">
+          <span class="stat-val" id="seed-out">—</span>
+          <span class="stat-label">Cites</span>
+        </div>
+        <div class="stat">
+          <span class="stat-val" id="seed-year">—</span>
+          <span class="stat-label">Year</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-title" style="border-top:1px solid var(--border)">
+      Related Cases
+    </div>
+
+    <div id="results-list">
+      <div class="state-msg">
+        Search for a case above and click<br>"Explore →" to map its citation network.
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── Graph ───────────────────────────────────────────────────────── -->
+  <main id="graph-wrap">
+    <div id="graph-placeholder">
+      <div class="placeholder-glyph">⚖</div>
+      <div class="placeholder-text">
+        Select a case and click Explore<br>to visualise its citation lineage
+      </div>
+    </div>
+
+    <div id="network"></div>
+
+    <div id="perf-chip"></div>
+
+    <div id="legend" style="display:none">
+      <div class="legend-title">Node legend</div>
+      <div class="legend-row">
+        <div class="legend-dot" style="background:#e07b54;box-shadow:0 0 6px #e07b5488"></div>
+        Seed case
+      </div>
+      <div class="legend-row">
+        <div class="legend-dot" style="background:#c9a84c"></div>
+        High relevance
+      </div>
+      <div class="legend-row">
+        <div class="legend-dot" style="background:#4caf82"></div>
+        Medium relevance
+      </div>
+      <div class="legend-row">
+        <div class="legend-dot" style="background:#3a5a7c"></div>
+        Low relevance
+      </div>
+      <div class="legend-row" style="margin-top:8px">
+        <div style="width:24px;height:2px;background:linear-gradient(90deg,#c9a84c44,#c9a84c)"></div>
+        Heavier edge = more citations
+      </div>
+    </div>
+
+    <div id="graph-controls">
+      <button class="graph-btn" id="btn-fit" title="Fit graph">⊞</button>
+      <button class="graph-btn" id="btn-zoom-in" title="Zoom in">+</button>
+      <button class="graph-btn" id="btn-zoom-out" title="Zoom out">−</button>
+    </div>
+  </main>
+
+  <!-- ── Right detail panel ──────────────────────────────────────────── -->
+  <aside id="detail-panel">
+    <div class="panel-title">Case Detail</div>
+    <div id="detail-content">
+      <p class="detail-empty">Click a node in the graph or a result in the list to inspect a case.</p>
+    </div>
+  </aside>
+
+</div><!-- #app -->
+
+<!-- Stat bar -->
+<div id="stat-bar">
+  <div class="stat-chip">Index: <span id="sb-cases">—</span> cases</div>
+  <div class="stat-chip">Edges: <span id="sb-edges">—</span></div>
+  <div class="stat-chip">Hash load: <span id="sb-load">—</span></div>
+  <div class="stat-chip">Avg probe: <span id="sb-probe">—</span></div>
+  <div class="stat-chip" style="margin-left:auto">LegiMap · MSML606 · 2026</div>
+</div>
+
+<!-- Loading overlay -->
+<div id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text">Expanding citation network…</div>
+</div>
+
+<script>
+/* ── State ─────────────────────────────────────────────────────────────── */
+let selectedCase = null;   // the case chosen from search
+let network      = null;   // vis.js Network instance
+let allNodes     = null;   // vis.js DataSet
+let allEdges     = null;   // vis.js DataSet
+let maxScore     = 1;      // used for score bar scaling
+
+/* ── Utility ────────────────────────────────────────────────────────────── */
+const $  = id => document.getElementById(id);
+const el = (tag, cls, html) => {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (html !== undefined) e.innerHTML = html;
+  return e;
+};
+
+function showLoading(v) {
+  $('loading-overlay').style.display = v ? 'flex' : 'none';
+}
+
+/* ── Load footer stats on startup ─────────────────────────────────────── */
+fetch('/api/stats')
+  .then(r => r.json())
+  .then(d => {
+    $('sb-cases').textContent = d.cases?.toLocaleString() ?? '—';
+    $('sb-edges').textContent = d.edges?.toLocaleString() ?? '—';
+    $('sb-load').textContent  = d.load_factor ?? '—';
+    $('sb-probe').textContent = d.avg_probe_length ?? '—';
+  });
+
+/* ── Search ─────────────────────────────────────────────────────────────── */
+let searchTimer = null;
+
+$('search-input').addEventListener('input', e => {
+  clearTimeout(searchTimer);
+  const q = e.target.value.trim();
+  if (q.length < 2) { hideDropdown(); return; }
+  searchTimer = setTimeout(() => doSearch(q), 280);
+});
+
+$('search-input').addEventListener('keydown', e => {
+  if (e.key === 'Escape') { hideDropdown(); }
+});
+
+document.addEventListener('click', e => {
+  if (!$('search-wrap').contains(e.target)) hideDropdown();
+});
+
+function hideDropdown() {
+  $('search-dropdown').classList.remove('visible');
+  $('search-dropdown').innerHTML = '';
+}
+
+function doSearch(q) {
+  fetch(`/api/search?q=${encodeURIComponent(q)}`)
+    .then(r => r.json())
+    .then(data => renderDropdown(data.results || []));
+}
+
+function renderDropdown(results) {
+  const dd = $('search-dropdown');
+  dd.innerHTML = '';
+
+  if (results.length === 0) {
+    dd.innerHTML = '<div class="search-item" style="color:var(--muted);font-style:italic">No cases found</div>';
+    dd.classList.add('visible');
+    return;
+  }
+
+  results.forEach(c => {
+    const item = el('div', 'search-item');
+    item.innerHTML = `
+      <div class="search-item-name">${c.name}</div>
+      <div class="search-item-meta">
+        ${c.cite}
+        <span class="badge">${c.year}</span>
+        <span class="badge" title="Times cited by others">↑${c.in_degree}</span>
+      </div>`;
+    item.addEventListener('click', () => selectCase(c));
+    dd.appendChild(item);
+  });
+
+  dd.classList.add('visible');
+}
+
+function selectCase(c) {
+  selectedCase = c;
+  $('search-input').value = c.name;
+  hideDropdown();
+  $('explore-btn').disabled = false;
+
+  // Pre-fill seed card
+  $('seed-card').classList.add('visible');
+  $('seed-name').textContent = c.name;
+  $('seed-cite').textContent = c.cite;
+  $('seed-in').textContent   = c.in_degree ?? '—';
+  $('seed-out').textContent  = c.out_degree ?? '—';
+  $('seed-year').textContent = c.year;
+}
+
+/* ── Explore button ─────────────────────────────────────────────────────── */
+$('explore-btn').addEventListener('click', () => {
+  if (!selectedCase) return;
+  const depth = $('depth-select').value;
+  const k     = $('k-select').value;
+  runExpand(selectedCase.id, depth, k);
+});
+
+function runExpand(caseId, depth, k) {
+  showLoading(true);
+  $('results-list').innerHTML = '<div class="state-msg">Computing…</div>';
+
+  fetch(`/api/expand?id=${caseId}&depth=${depth}&k=${k}`)
+    .then(r => r.json())
+    .then(data => {
+      showLoading(false);
+      if (data.error) { alert(data.error); return; }
+      renderGraph(data);
+      renderSidebar(data);
+      showPerfChip(data.search_time_ms);
+    })
+    .catch(() => {
+      showLoading(false);
+      alert('Network error — is the Flask server running?');
+    });
+}
+
+/* ── Graph rendering ────────────────────────────────────────────────────── */
+function nodeColor(node) {
+  if (node.is_seed) return { background:'#e07b54', border:'#c9603a',
+                              highlight:{background:'#e8926d',border:'#c9603a'} };
+  const s = node.score ?? 0;
+  if (s >= 1.5) return { background:'#c9a84c', border:'#8a6f35',
+                         highlight:{background:'#dbbe6a',border:'#8a6f35'} };
+  if (s >= 0.5) return { background:'#4caf82', border:'#357a5a',
+                         highlight:{background:'#60c494',border:'#357a5a'} };
+  return { background:'#3a5a7c', border:'#2a3f58',
+           highlight:{background:'#4e729a',border:'#2a3f58'} };
+}
+
+function renderGraph(data) {
+  $('graph-placeholder').style.display = 'none';
+  $('legend').style.display = 'block';
+
+  const { nodes, edges } = data.graph;
+
+  const visNodes = nodes.map(n => ({
+    id    : n.id,
+    label : n.label + '\n' + (n.year || ''),
+    title : `${n.full_name}\n${n.cite}\nCited by: ${n.in_degree}`,
+    value : Math.max(n.in_degree, 1),   // controls node size
+    color : nodeColor(n),
+    font  : { color: '#fdf6e3', face: 'EB Garamond, Georgia, serif', size: 13 },
+    shape : 'dot',
+    _data : n,
+  }));
+
+  const visEdges = edges.map(e => ({
+    from   : e.from,
+    to     : e.to,
+    width  : Math.min(e.weight * 0.8, 4),
+    color  : { color:'rgba(201,168,76,0.3)', highlight:'rgba(201,168,76,0.8)' },
+    arrows : { to: { enabled: true, scaleFactor: 0.5 } },
+    smooth : { type: 'curvedCW', roundness: 0.2 },
+  }));
+
+  allNodes = new vis.DataSet(visNodes);
+  allEdges = new vis.DataSet(visEdges);
+
+  const container = $('network');
+
+  if (network) { network.destroy(); }
+
+  network = new vis.Network(container, { nodes: allNodes, edges: allEdges }, {
+    physics: {
+      enabled: true,
+      solver : 'forceAtlas2Based',
+      forceAtlas2Based: { gravitationalConstant:-60, springLength:140, springConstant:0.06 },
+      stabilization: { iterations: 180, fit: true },
+    },
+    interaction: { hover: true, tooltipDelay: 100 },
+    nodes: { scaling: { min:14, max:48, label:{enabled:true} } },
+    layout: { improvedLayout: true },
+  });
+
+  network.on('click', params => {
+    if (params.nodes.length === 0) return;
+    const nodeId = params.nodes[0];
+    const n = allNodes.get(nodeId);
+    if (n?._data) showDetail(n._data);
+    highlightResult(nodeId);
+  });
+}
+
+function showPerfChip(ms) {
+  const chip = $('perf-chip');
+  chip.textContent = `Search: ${ms}ms`;
+  chip.style.display = 'block';
+}
+
+/* ── Sidebar ────────────────────────────────────────────────────────────── */
+function renderSidebar(data) {
+  const seed = data.seed;
+  $('seed-card').classList.add('visible');
+  $('seed-name').textContent = seed.name  || '—';
+  $('seed-cite').textContent = seed.cite  || '—';
+  $('seed-in').textContent   = seed.in_degree  ?? '—';
+  $('seed-out').textContent  = seed.out_degree ?? '—';
+  $('seed-year').textContent = seed.year  || '—';
+
+  const ranked = data.ranked || [];
+  maxScore = ranked.length > 0 ? (ranked[0].score || 1) : 1;
+
+  const list = $('results-list');
+  list.innerHTML = '';
+
+  if (ranked.length === 0) {
+    list.innerHTML = '<div class="state-msg">No related cases found.</div>';
+    return;
+  }
+
+  ranked.forEach(r => {
+    const pct = maxScore > 0 ? Math.round((r.score / maxScore) * 100) : 0;
+    const item = el('div', 'result-item');
+    item.dataset.caseId = r.case_id;
+
+    item.innerHTML = `
+      <div class="result-rank">#${r.rank}</div>
+      <div class="result-body">
+        <div class="result-name">${r.name}</div>
+        <div class="result-meta">
+          <span class="result-cite">${r.cite}</span>
+          <span class="badge">${r.year}</span>
+          <span class="badge" title="Shared references">⇄${r.shared_refs}</span>
+        </div>
+        <div class="score-bar-wrap">
+          <div class="score-bar-bg">
+            <div class="score-bar-fill" style="width:${pct}%"></div>
+          </div>
+          <span class="score-val">${r.score.toFixed(2)}</span>
+        </div>
+      </div>`;
+
+    item.addEventListener('click', () => {
+      showDetailById(r.case_id);
+      highlightResult(r.case_id);
+      if (network) network.selectNodes([r.case_id]);
+    });
+
+    list.appendChild(item);
+  });
+}
+
+function highlightResult(caseId) {
+  document.querySelectorAll('.result-item').forEach(el => {
+    el.classList.toggle('selected', parseInt(el.dataset.caseId) === caseId);
+  });
+}
+
+/* ── Detail panel ───────────────────────────────────────────────────────── */
+function showDetail(nodeData) {
+  const d = $('detail-content');
+  const refsHtml = (nodeData.cites_to || []).map(r =>
+    `<li class="ref-item" onclick="searchByCite('${r.key}')">
+       ${r.cite} ${r.key ? '' : '<span style="color:#e07b54;font-size:0.65rem">(unresolved)</span>'}
+     </li>`
+  ).join('');
+
+  d.innerHTML = `
+    <div class="detail-name">${nodeData.full_name || nodeData.name || '—'}</div>
+    <div class="detail-cite-big">${nodeData.cite || '—'}</div>
+
+    <div class="metrics-grid">
+      <div class="metric-box">
+        <div class="metric-val">${nodeData.in_degree ?? '—'}</div>
+        <div class="metric-lbl">Cited by</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-val">${nodeData.year || '—'}</div>
+        <div class="metric-lbl">Year</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-val">${nodeData.score != null ? nodeData.score.toFixed(3) : '—'}</div>
+        <div class="metric-lbl">Rel. score</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-val">${nodeData.depth ?? '—'}</div>
+        <div class="metric-lbl">Hops from seed</div>
+      </div>
+    </div>
+
+    ${refsHtml ? `
+    <div class="detail-section">
+      <div class="detail-label">Cites (${(nodeData.cites_to||[]).length})</div>
+      <ul class="refs-list">${refsHtml}</ul>
+    </div>` : ''}
+
+    <button class="btn-explore" style="width:100%;margin-top:8px"
+      onclick="runExpand(${nodeData.id}, $('depth-select').value, $('k-select').value)">
+      Explore from this case →
+    </button>`;
+}
+
+function showDetailById(caseId) {
+  fetch(`/api/case?id=${caseId}`)
+    .then(r => r.json())
+    .then(c => {
+      // Build a compatible nodeData object from the API case response
+      const nodeData = {
+        id       : c.id,
+        full_name: c.name,
+        name     : c.abbreviation,
+        cite     : c.cite,
+        year     : c.year,
+        in_degree: c.in_degree,
+        depth    : null,
+        score    : null,
+        cites_to : c.cites_to || [],
+      };
+      showDetail(nodeData);
+    });
+}
+
+function searchByCite(key) {
+  if (!key) return;
+  // Convert canonical key back to display form and search
+  const display = key.replace(/^(\d+)US(\d+)$/, '$1 U.S. $2');
+  $('search-input').value = display;
+  doSearch(display);
+}
+
+/* ── Graph controls ─────────────────────────────────────────────────────── */
+$('btn-fit').addEventListener('click',      () => network?.fit());
+$('btn-zoom-in').addEventListener('click',  () => network?.moveTo({scale: (network.getScale()||1) * 1.3}));
+$('btn-zoom-out').addEventListener('click', () => network?.moveTo({scale: (network.getScale()||1) / 1.3}));
+</script>
+</body>
+</html>
