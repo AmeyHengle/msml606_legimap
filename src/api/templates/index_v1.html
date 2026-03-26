@@ -13,9 +13,8 @@
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 
 <style>
-/* ── Design tokens — dark theme (default) ─────────────────────────────── */
-:root,
-body[data-theme="dark"] {
+/* ── Design tokens — Dark theme (default) ─────────────────────────────── */
+:root {
   --navy:       #0d1b2a;
   --navy-mid:   #152438;
   --navy-light: #1e3352;
@@ -23,63 +22,140 @@ body[data-theme="dark"] {
   --gold-dim:   #8a6f35;
   --gold-pale:  #f5e6c0;
   --parchment:  #fdf6e3;
+  --ink:        #1a1a2e;
   --muted:      #6b7e96;
   --accent:     #e07b54;
   --green:      #4caf82;
-  --border:     rgba(201,168,76,0.18);
-  --panel-bg:   rgba(21,36,56,0.95);
-  --text-main:  #f5e6c0;
-  --text-muted: #6b7e96;
-  --bg-page:    #0d1b2a;
-  --bg-input:   #152438;
-  --header-bg:  rgba(13,27,42,0.96);
   --radius:     4px;
   --font-serif: 'EB Garamond', Georgia, serif;
   --font-mono:  'DM Mono', 'Courier New', monospace;
-  --shadow:     0 8px 32px rgba(0,0,0,0.45);
-  --glow:       0 0 20px rgba(201,168,76,0.15);
-  --toggle-bg:  #1e3352;
-  --toggle-icon: '☀';
-  --toggle-label: 'Light';
+
+  /* Semantic layer — what components actually reference */
+  --bg:             #0d1b2a;
+  --bg-mid:         #152438;
+  --bg-light:       #1e3352;
+  --surface:        rgba(21,36,56,0.95);
+  --surface-hover:  rgba(255,255,255,0.03);
+  --surface-select: rgba(201,168,76,0.07);
+  --text-primary:   #f5e6c0;
+  --text-muted:     #6b7e96;
+  --text-gold:      #c9a84c;
+  --border-color:   rgba(201,168,76,0.18);
+  --border-strong:  rgba(201,168,76,0.35);
+  --score-bg:       rgba(255,255,255,0.06);
+  --metric-bg:      rgba(255,255,255,0.03);
+  --overlay-bg:     rgba(13,27,42,0.85);
+  --header-bg:      rgba(13,27,42,0.96);
+  --footer-bg:      rgba(13,27,42,0.99);
+  --graph-bg:       #0d1b2a;
+  --shadow:         0 8px 32px rgba(0,0,0,0.45);
+  --glow:           0 0 20px rgba(201,168,76,0.15);
+  --texture-color:  rgba(201,168,76,0.015);
+  --radial-glow:    rgba(201,168,76,0.04);
+  --border:         rgba(201,168,76,0.18);
+  --panel-bg:       rgba(21,36,56,0.95);
 }
 
-/* ── Light theme ──────────────────────────────────────────────────────── */
-body[data-theme="light"] {
-  --navy:       #f0ece0;
-  --navy-mid:   #fdf8ef;
-  --navy-light: #e8e0ce;
-  --gold:       #8a6020;
-  --gold-dim:   #b07830;
-  --gold-pale:  #3d2800;
-  --parchment:  #2a1a00;
-  --muted:      #7a6a50;
-  --accent:     #c0440a;
-  --green:      #2a7a50;
-  --border:     rgba(138,96,32,0.22);
-  --panel-bg:   rgba(253,248,239,0.97);
-  --text-main:  #2a1a00;
-  --text-muted: #7a6a50;
-  --bg-page:    #f0ece0;
-  --bg-input:   #fdf8ef;
-  --header-bg:  rgba(240,236,224,0.97);
-  --shadow:     0 8px 32px rgba(0,0,0,0.12);
-  --glow:       0 0 20px rgba(138,96,32,0.10);
-  --toggle-bg:  #e8e0ce;
-  --toggle-icon: '🌙';
-  --toggle-label: 'Dark';
+/* ── Light theme overrides ────────────────────────────────────────────── */
+[data-theme="light"] {
+  --bg:             #f7f3ec;
+  --bg-mid:         #eee8dc;
+  --bg-light:       #e4ddd0;
+  --surface:        rgba(255,251,244,0.97);
+  --surface-hover:  rgba(0,0,0,0.03);
+  --surface-select: rgba(160,120,40,0.08);
+  --text-primary:   #1a2535;
+  --text-muted:     #7a6e60;
+  --text-gold:      #8a6020;
+  --border-color:   rgba(140,100,30,0.20);
+  --border-strong:  rgba(140,100,30,0.40);
+  --score-bg:       rgba(0,0,0,0.07);
+  --metric-bg:      rgba(0,0,0,0.04);
+  --overlay-bg:     rgba(240,234,222,0.88);
+  --header-bg:      rgba(247,243,236,0.97);
+  --footer-bg:      rgba(236,230,218,0.99);
+  --graph-bg:       #f0ebe1;
+  --shadow:         0 8px 32px rgba(0,0,0,0.12);
+  --glow:           0 0 20px rgba(160,120,40,0.10);
+  --texture-color:  rgba(140,100,30,0.025);
+  --radial-glow:    rgba(160,120,40,0.05);
+  /* Re-map legacy tokens so existing selectors pick up light values */
+  --navy:           #f7f3ec;
+  --navy-mid:       #eee8dc;
+  --navy-light:     #e4ddd0;
+  --gold:           #9a6e1a;
+  --gold-dim:       #7a5515;
+  --gold-pale:      #1a2535;
+  --muted:          #7a6e60;
+  --accent:         #c05030;
+  --border:         rgba(140,100,30,0.20);
+  --panel-bg:       rgba(255,251,244,0.97);
 }
+
+/* ── Smooth theme transition ──────────────────────────────────────────── */
+html {
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* ── Theme toggle pill ────────────────────────────────────────────────── */
+.theme-toggle {
+  position: relative;
+  width: 52px;
+  height: 28px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.theme-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.theme-track {
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  background: var(--bg-mid);
+  border: 1px solid var(--border-color);
+  transition: background 0.25s, border-color 0.25s;
+}
+
+.theme-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--text-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  line-height: 1;
+  transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1), background 0.25s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.30);
+}
+
+.theme-toggle input:checked ~ .theme-track .theme-thumb {
+  transform: translateX(24px);
+}
+
+.theme-thumb::after { content: '☾'; filter: brightness(10); }
+[data-theme="light"] .theme-thumb::after { content: '☀'; filter: none; }
 
 /* ── Reset & base ─────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
   height: 100%;
-  background: var(--bg-page);
-  color: var(--text-main);
+  background: var(--bg);
+  color: var(--text-primary);
   font-family: var(--font-serif);
   font-size: 16px;
   overflow: hidden;
-  transition: background 0.25s, color 0.25s;
 }
 
 /* Fine diagonal texture overlay */
@@ -91,8 +167,8 @@ body::before {
       45deg,
       transparent,
       transparent 40px,
-      rgba(201,168,76,0.015) 40px,
-      rgba(201,168,76,0.015) 41px
+      var(--texture-color) 40px,
+      var(--texture-color) 41px
     );
   pointer-events: none;
   z-index: 0;
@@ -156,14 +232,14 @@ body::before {
 #search-input {
   width: 100%;
   padding: 10px 16px 10px 40px;
-  background: var(--bg-input);
-  border: 1px solid var(--border);
+  background: var(--bg-mid);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius);
-  color: var(--text-main);
+  color: var(--text-primary);
   font-family: var(--font-serif);
   font-size: 0.95rem;
   outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s, background 0.25s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 #search-input:focus {
@@ -186,8 +262,8 @@ body::before {
 #search-dropdown {
   position: absolute;
   top: calc(100% + 6px); left: 0; right: 0;
-  background: var(--bg-input);
-  border: 1px solid var(--border);
+  background: var(--bg-mid);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   max-height: 320px;
@@ -201,16 +277,16 @@ body::before {
 .search-item {
   padding: 10px 16px;
   cursor: pointer;
-  border-bottom: 1px solid rgba(201,168,76,0.07);
+  border-bottom: 1px solid var(--border-color);
   transition: background 0.15s;
 }
 
 .search-item:last-child { border-bottom: none; }
-.search-item:hover { background: var(--navy-light); }
+.search-item:hover { background: var(--bg-light); }
 
 .search-item-name {
   font-size: 0.92rem;
-  color: var(--gold-pale);
+  color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -225,8 +301,8 @@ body::before {
 
 .badge {
   display: inline-block;
-  background: rgba(201,168,76,0.12);
-  color: var(--gold);
+  background: var(--surface-select);
+  color: var(--text-gold);
   font-family: var(--font-mono);
   font-size: 0.65rem;
   padding: 1px 6px;
@@ -252,9 +328,9 @@ body::before {
 }
 
 select {
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  color: var(--text-main);
+  background: var(--bg-mid);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
   font-family: var(--font-mono);
   font-size: 0.78rem;
   padding: 5px 10px;
@@ -284,8 +360,8 @@ select {
 /* ── Left sidebar ─────────────────────────────────────────────────────── */
 #sidebar {
   grid-area: sidebar;
-  background: var(--panel-bg);
-  border-right: 1px solid var(--border);
+  background: var(--surface);
+  border-right: 1px solid var(--border-color);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -296,16 +372,16 @@ select {
   font-family: var(--font-mono);
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: var(--gold);
+  color: var(--text-gold);
   padding: 16px 20px 10px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-color);
   flex-shrink: 0;
 }
 
 /* Seed card */
 #seed-card {
   padding: 18px 20px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-color);
   display: none;
 }
 
@@ -323,7 +399,7 @@ select {
 #seed-name {
   font-size: 1.08rem;
   font-weight: 600;
-  color: var(--gold-pale);
+  color: var(--text-primary);
   line-height: 1.35;
   margin-bottom: 4px;
 }
@@ -331,7 +407,7 @@ select {
 #seed-cite {
   font-family: var(--font-mono);
   font-size: 0.78rem;
-  color: var(--gold);
+  color: var(--text-gold);
   margin-bottom: 8px;
 }
 
@@ -348,7 +424,7 @@ select {
 .stat-val {
   font-family: var(--font-mono);
   font-size: 1rem;
-  color: var(--gold);
+  color: var(--text-gold);
   font-weight: 500;
 }
 
@@ -368,7 +444,7 @@ select {
 
 .result-item {
   padding: 11px 20px;
-  border-bottom: 1px solid rgba(201,168,76,0.06);
+  border-bottom: 1px solid var(--border-color);
   cursor: pointer;
   transition: background 0.15s;
   display: flex;
@@ -376,8 +452,8 @@ select {
   align-items: flex-start;
 }
 
-.result-item:hover { background: rgba(255,255,255,0.03); }
-.result-item.selected { background: rgba(201,168,76,0.07); }
+.result-item:hover { background: var(--surface-hover); }
+.result-item.selected { background: var(--surface-select); }
 
 .result-rank {
   font-family: var(--font-mono);
@@ -392,7 +468,7 @@ select {
 
 .result-name {
   font-size: 0.88rem;
-  color: var(--gold-pale);
+  color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -422,7 +498,7 @@ select {
 .score-bar-bg {
   flex: 1;
   height: 3px;
-  background: rgba(255,255,255,0.06);
+  background: var(--score-bg);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -456,7 +532,7 @@ select {
   grid-area: graph;
   position: relative;
   overflow: hidden;
-  background: var(--navy);
+  background: var(--graph-bg);
 }
 
 /* Radial glow from centre */
@@ -466,7 +542,7 @@ select {
   top: 50%; left: 50%;
   transform: translate(-50%, -50%);
   width: 500px; height: 500px;
-  background: radial-gradient(circle, rgba(201,168,76,0.04) 0%, transparent 70%);
+  background: radial-gradient(circle, var(--radial-glow) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
 }
@@ -490,9 +566,9 @@ select {
 
 .graph-btn {
   width: 34px; height: 34px;
-  background: var(--panel-bg);
-  border: 1px solid var(--border);
-  color: var(--gold);
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  color: var(--text-gold);
   border-radius: var(--radius);
   font-size: 1rem;
   cursor: pointer;
@@ -502,14 +578,14 @@ select {
   transition: background 0.15s;
 }
 
-.graph-btn:hover { background: var(--navy-light); }
+.graph-btn:hover { background: var(--bg-light); }
 
 /* Legend */
 #legend {
   position: absolute;
   bottom: 16px; left: 16px;
-  background: var(--panel-bg);
-  border: 1px solid var(--border);
+  background: var(--surface);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius);
   padding: 12px 16px;
   font-size: 0.72rem;
@@ -530,7 +606,7 @@ select {
   align-items: center;
   gap: 8px;
   margin-bottom: 5px;
-  color: var(--gold-pale);
+  color: var(--text-primary);
 }
 
 .legend-dot {
@@ -543,13 +619,13 @@ select {
 #perf-chip {
   position: absolute;
   top: 12px; right: 16px;
-  background: var(--panel-bg);
-  border: 1px solid var(--border);
+  background: var(--surface);
+  border: 1px solid var(--border-color);
   border-radius: 2px;
   padding: 4px 10px;
   font-family: var(--font-mono);
   font-size: 0.68rem;
-  color: var(--muted);
+  color: var(--text-muted);
   z-index: 10;
   display: none;
 }
@@ -584,8 +660,8 @@ select {
 /* ── Right panel (case detail) ────────────────────────────────────────── */
 #detail-panel {
   grid-area: panel;
-  background: var(--panel-bg);
-  border-left: 1px solid var(--border);
+  background: var(--surface);
+  border-left: 1px solid var(--border-color);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -619,14 +695,14 @@ select {
 
 .detail-value {
   font-size: 0.88rem;
-  color: var(--gold-pale);
+  color: var(--text-primary);
   line-height: 1.5;
 }
 
 .detail-name {
   font-size: 1.05rem;
   font-weight: 600;
-  color: var(--gold-pale);
+  color: var(--text-primary);
   line-height: 1.4;
   margin-bottom: 4px;
 }
@@ -634,7 +710,7 @@ select {
 .detail-cite-big {
   font-family: var(--font-mono);
   font-size: 0.9rem;
-  color: var(--gold);
+  color: var(--text-gold);
   margin-bottom: 16px;
 }
 
@@ -646,8 +722,8 @@ select {
 }
 
 .metric-box {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid var(--border);
+  background: var(--metric-bg);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius);
   padding: 10px 12px;
 }
@@ -655,7 +731,7 @@ select {
 .metric-val {
   font-family: var(--font-mono);
   font-size: 1.1rem;
-  color: var(--gold);
+  color: var(--text-gold);
   font-weight: 500;
 }
 
@@ -673,21 +749,21 @@ select {
 
 .ref-item {
   padding: 6px 0;
-  border-bottom: 1px solid rgba(201,168,76,0.06);
+  border-bottom: 1px solid var(--border-color);
   font-family: var(--font-mono);
   font-size: 0.72rem;
-  color: var(--muted);
+  color: var(--text-muted);
   cursor: pointer;
   transition: color 0.15s;
 }
 
-.ref-item:hover { color: var(--gold); }
+.ref-item:hover { color: var(--text-gold); }
 .ref-item:last-child { border-bottom: none; }
 
 /* ── Loading spinner ──────────────────────────────────────────────────── */
 #loading-overlay {
   position: fixed; inset: 0;
-  background: rgba(13,27,42,0.85);
+  background: var(--overlay-bg);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -714,126 +790,54 @@ select {
   letter-spacing: 0.08em;
 }
 
-/* ── Hash stats panel (right panel, below case detail) ───────────────── */
-#hash-stats {
-  border-top: 1px solid var(--border);
-  flex-shrink: 0;
-}
-
-.hs-section-title {
-  font-family: var(--font-mono);
-  font-size: 0.62rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--gold);
-  padding: 12px 20px 8px;
-  border-bottom: 1px solid var(--border);
-}
-
-.hs-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-}
-
-.hs-table tr {
-  border-bottom: 1px solid rgba(201,168,76,0.06);
-}
-
-.hs-table tr:last-child { border-bottom: none; }
-
-.hs-table td {
-  padding: 6px 20px;
-  vertical-align: middle;
-}
-
-.hs-table td:first-child {
-  color: var(--muted);
-  width: 55%;
-}
-
-.hs-table td:last-child {
-  color: var(--gold);
-  font-weight: 500;
-  text-align: right;
-}
-
-/* Speedup highlight row */
-.hs-highlight td:last-child {
-  color: var(--green);
-  font-size: 0.8rem;
-}
-
-/* Status indicator dots */
-.hs-dot {
-  display: inline-block;
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  margin-right: 5px;
-  vertical-align: middle;
-}
-
-.hs-dot.ok   { background: var(--green); }
-.hs-dot.warn { background: var(--accent); }
-
-/* Query section — hidden until first Explore */
-#hs-query-section { display: none; }
-#hs-query-section.visible { display: block; }
-
-/* ── Theme toggle button ──────────────────────────────────────────────── */
-#theme-toggle {
+/* ── Footer stat bar ──────────────────────────────────────────────────── */
+#stat-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 48px;
+  background: var(--footer-bg);
+  border-top: 1px solid var(--border-strong);
   display: flex;
   align-items: center;
-  gap: 7px;
-  padding: 7px 14px;
-  background: var(--toggle-bg);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  cursor: pointer;
+  padding: 0 28px;
+  gap: 36px;
   font-family: var(--font-mono);
-  font-size: 0.72rem;
-  color: var(--text-main);
-  letter-spacing: 0.05em;
-  flex-shrink: 0;
-  transition: background 0.2s, border-color 0.2s;
-  white-space: nowrap;
+  z-index: 50;
 }
 
-#theme-toggle:hover {
-  border-color: var(--gold);
+.stat-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.15;
 }
 
-.toggle-track {
-  width: 28px; height: 16px;
-  background: var(--border);
-  border-radius: 8px;
-  position: relative;
-  transition: background 0.2s;
-  flex-shrink: 0;
+.stat-chip .chip-label {
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
 }
 
-.toggle-thumb {
-  position: absolute;
-  top: 2px; left: 2px;
-  width: 12px; height: 12px;
-  border-radius: 50%;
-  background: var(--gold);
-  transition: transform 0.2s, background 0.2s;
+.stat-chip .chip-value {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-gold);
+  letter-spacing: 0.03em;
 }
 
-body[data-theme="light"] .toggle-thumb {
-  transform: translateX(12px);
-}
-
-body[data-theme="light"] .toggle-track {
-  background: rgba(138,96,32,0.3);
+.stat-chip.branding {
+  flex-direction: row;
+  align-items: center;
+  font-size: 0.7rem;
+  color: var(--muted);
+  letter-spacing: 0.06em;
 }
 
 /* ── Scrollbar styling ────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--navy-light); border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: var(--bg-light); border-radius: 2px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--gold-dim); }
 </style>
 </head>
@@ -879,11 +883,12 @@ body[data-theme="light"] .toggle-track {
       </button>
 
       <!-- Theme toggle -->
-      <button id="theme-toggle" title="Toggle light/dark theme">
-        <span id="toggle-icon">☀</span>
-        <div class="toggle-track"><div class="toggle-thumb"></div></div>
-        <span id="toggle-label">Light</span>
-      </button>
+      <label class="theme-toggle" title="Toggle light / dark theme" aria-label="Toggle theme">
+        <input type="checkbox" id="theme-checkbox">
+        <div class="theme-track">
+          <div class="theme-thumb"></div>
+        </div>
+      </label>
     </div>
   </header>
 
@@ -911,7 +916,7 @@ body[data-theme="light"] .toggle-track {
       </div>
     </div>
 
-    <div class="panel-title" style="border-top:1px solid var(--border)">
+    <div class="panel-title" style="border-top:1px solid var(--border-color)">
       Related Cases
     </div>
 
@@ -972,72 +977,30 @@ body[data-theme="light"] .toggle-track {
     <div id="detail-content">
       <p class="detail-empty">Click a node in the graph or a result in the list to inspect a case.</p>
     </div>
-
-    <!-- ── Hash Table Stats ──────────────────────────────────────────── -->
-    <div id="hash-stats">
-
-      <!-- Index health — always visible -->
-      <div class="hs-section-title">⬡ Index Health</div>
-      <table class="hs-table">
-        <tr>
-          <td>Cases indexed</td>
-          <td id="hs-cases">—</td>
-        </tr>
-        <tr>
-          <td>Table capacity</td>
-          <td id="hs-capacity">—</td>
-        </tr>
-        <tr>
-          <td>Load factor</td>
-          <td id="hs-load">—</td>
-        </tr>
-        <tr>
-          <td>Collision rate</td>
-          <td id="hs-collision-rate">—</td>
-        </tr>
-        <tr>
-          <td>Avg probe length</td>
-          <td id="hs-probe">—</td>
-        </tr>
-        <tr>
-          <td>Max probe length</td>
-          <td id="hs-max-probe">—</td>
-        </tr>
-      </table>
-
-      <!-- Query stats — populated after each Explore click -->
-      <div id="hs-query-section">
-        <div class="hs-section-title">⚡ This Query</div>
-        <table class="hs-table">
-          <tr>
-            <td>Hash lookup time</td>
-            <td id="hs-ht-time">—</td>
-          </tr>
-          <tr>
-            <td>Est. linear scan time</td>
-            <td id="hs-lin-time">—</td>
-          </tr>
-          <tr class="hs-highlight">
-            <td>Speedup</td>
-            <td id="hs-speedup">—</td>
-          </tr>
-          <tr>
-            <td>Steps (hash)</td>
-            <td id="hs-ht-steps">—</td>
-          </tr>
-          <tr>
-            <td>Steps (linear, avg)</td>
-            <td id="hs-lin-steps">—</td>
-          </tr>
-        </table>
-      </div>
-
-    </div><!-- #hash-stats -->
   </aside>
 
 </div><!-- #app -->
 
-<!-- stat bar removed — stats now in right panel -->
+<!-- Stat bar -->
+<div id="stat-bar">
+  <div class="stat-chip">
+    <span class="chip-label">Cases indexed</span>
+    <span class="chip-value" id="sb-cases">—</span>
+  </div>
+  <div class="stat-chip">
+    <span class="chip-label">Citation edges</span>
+    <span class="chip-value" id="sb-edges">—</span>
+  </div>
+  <div class="stat-chip">
+    <span class="chip-label">Hash load factor</span>
+    <span class="chip-value" id="sb-load">—</span>
+  </div>
+  <div class="stat-chip">
+    <span class="chip-label">Avg probe length</span>
+    <span class="chip-value" id="sb-probe">—</span>
+  </div>
+  <div class="stat-chip branding" style="margin-left:auto">LegiMap &nbsp;·&nbsp; MSML606 &nbsp;·&nbsp; 2026</div>
+</div>
 
 <!-- Loading overlay -->
 <div id="loading-overlay">
@@ -1066,31 +1029,14 @@ function showLoading(v) {
   $('loading-overlay').style.display = v ? 'flex' : 'none';
 }
 
-/* ── Load index stats into right panel on startup ─────────────────────── */
-let _indexStats = {};   // cached for use in per-query calculations
-
+/* ── Load footer stats on startup ─────────────────────────────────────── */
 fetch('/api/stats')
   .then(r => r.json())
   .then(d => {
-    _indexStats = d;
-
-    const lf   = d.load_factor ?? 0;
-    const prob = d.avg_probe_length ?? 0;
-
-    $('hs-cases').textContent    = d.cases?.toLocaleString() ?? '—';
-    $('hs-capacity').textContent = d.capacity?.toLocaleString() ?? '—';
-
-    // Load factor — colour-code by threshold
-    const lfEl = $('hs-load');
-    lfEl.innerHTML = `<span class="hs-dot ${lf < 0.7 ? 'ok' : 'warn'}"></span>${lf}`;
-
-    $('hs-collision-rate').textContent = d.collision_rate?.toFixed(4) ?? '—';
-
-    // Avg probe — flag if > 2.0
-    const probeEl = $('hs-probe');
-    probeEl.innerHTML = `<span class="hs-dot ${prob < 2.0 ? 'ok' : 'warn'}"></span>${prob}`;
-
-    $('hs-max-probe').textContent = d.max_probe_length ?? '—';
+    $('sb-cases').textContent = d.cases?.toLocaleString() ?? '—';
+    $('sb-edges').textContent = d.edges?.toLocaleString() ?? '—';
+    $('sb-load').textContent  = d.load_factor ?? '—';
+    $('sb-probe').textContent = d.avg_probe_length ?? '—';
   });
 
 /* ── Search ─────────────────────────────────────────────────────────────── */
@@ -1183,7 +1129,6 @@ function runExpand(caseId, depth, k) {
       renderGraph(data);
       renderSidebar(data);
       showPerfChip(data.search_time_ms);
-      updateQueryStats(data.search_time_ms);
     })
     .catch(() => {
       showLoading(false);
@@ -1191,29 +1136,40 @@ function runExpand(caseId, depth, k) {
     });
 }
 
-function updateQueryStats(searchTimeMs) {
-  const n         = _indexStats.cases        ?? 0;
-  const avgProbe  = _indexStats.avg_probe_length ?? 1;
-  const htUs      = searchTimeMs * 1000;   // convert ms → µs
+/* ── Theme toggle ────────────────────────────────────────────────────────── */
+(function initTheme() {
+  const saved = localStorage.getItem('legimap-theme') || 'dark';
+  applyTheme(saved);
+  // Sync checkbox state
+  $('theme-checkbox').checked = (saved === 'light');
+})();
 
-  // Estimate cost per "step" from the actual hash lookup time,
-  // then scale to a worst-case linear scan (all N records)
-  const stepCostUs   = avgProbe > 0 ? htUs / avgProbe : htUs;
-  const linearUs     = stepCostUs * n;         // worst case: scan every record
-  const linearAvgUs  = stepCostUs * (n / 2);   // average case: scan half
+$('theme-checkbox').addEventListener('change', e => {
+  const theme = e.target.checked ? 'light' : 'dark';
+  applyTheme(theme);
+  localStorage.setItem('legimap-theme', theme);
 
-  const speedupWorst = linearUs    > 0 ? Math.round(linearUs    / htUs) : 0;
-  const speedupAvg   = linearAvgUs > 0 ? Math.round(linearAvgUs / htUs) : 0;
+  // Update live graph if one is visible
+  if (network && allNodes && allEdges) {
+    const fontColor = theme === 'light' ? '#1a2535' : '#fdf6e3';
+    const edgeCol   = theme === 'light'
+      ? { color:'rgba(140,100,30,0.25)', highlight:'rgba(140,100,30,0.70)' }
+      : { color:'rgba(201,168,76,0.3)',  highlight:'rgba(201,168,76,0.8)'  };
 
-  const fmt = us => us >= 1000 ? `${(us/1000).toFixed(1)} ms` : `${us.toFixed(1)} µs`;
+    allNodes.forEach(n => {
+      allNodes.update({ id: n.id, font: { ...n.font, color: fontColor } });
+    });
+    allEdges.forEach(ed => {
+      allEdges.update({ id: ed.id, color: edgeCol });
+    });
 
-  $('hs-ht-time').textContent   = fmt(htUs);
-  $('hs-lin-time').textContent  = `${fmt(linearAvgUs)} avg / ${fmt(linearUs)} worst`;
-  $('hs-speedup').textContent   = `${speedupAvg.toLocaleString()}× avg  ·  ${speedupWorst.toLocaleString()}× worst`;
-  $('hs-ht-steps').textContent  = `~${avgProbe.toFixed(2)} (avg probe)`;
-  $('hs-lin-steps').textContent = `~${Math.round(n/2).toLocaleString()} of ${n.toLocaleString()}`;
+    // Also update the graph canvas background
+    network.setOptions({ nodes: {} });   // nudges vis.js to repaint
+  }
+});
 
-  $('hs-query-section').classList.add('visible');
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
 }
 
 /* ── Graph rendering ────────────────────────────────────────────────────── */
@@ -1235,22 +1191,30 @@ function renderGraph(data) {
 
   const { nodes, edges } = data.graph;
 
+  const fontColor = document.documentElement.getAttribute('data-theme') === 'light'
+    ? '#1a2535' : '#fdf6e3';
+
   const visNodes = nodes.map(n => ({
     id    : n.id,
     label : n.label + '\n' + (n.year || ''),
     title : `${n.full_name}\n${n.cite}\nCited by: ${n.in_degree}`,
     value : Math.max(n.in_degree, 1),   // controls node size
     color : nodeColor(n),
-    font  : { color: '#fdf6e3', face: 'EB Garamond, Georgia, serif', size: 13 },
+    font  : { color: fontColor, face: 'EB Garamond, Georgia, serif', size: 13 },
     shape : 'dot',
     _data : n,
   }));
+
+  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+  const edgeColor = isDark
+    ? { color:'rgba(201,168,76,0.3)', highlight:'rgba(201,168,76,0.8)' }
+    : { color:'rgba(140,100,30,0.25)', highlight:'rgba(140,100,30,0.70)' };
 
   const visEdges = edges.map(e => ({
     from   : e.from,
     to     : e.to,
     width  : Math.min(e.weight * 0.8, 4),
-    color  : { color:'rgba(201,168,76,0.3)', highlight:'rgba(201,168,76,0.8)' },
+    color  : edgeColor,
     arrows : { to: { enabled: true, scaleFactor: 0.5 } },
     smooth : { type: 'curvedCW', roundness: 0.2 },
   }));
@@ -1424,24 +1388,6 @@ function searchByCite(key) {
 $('btn-fit').addEventListener('click',      () => network?.fit());
 $('btn-zoom-in').addEventListener('click',  () => network?.moveTo({scale: (network.getScale()||1) * 1.3}));
 $('btn-zoom-out').addEventListener('click', () => network?.moveTo({scale: (network.getScale()||1) / 1.3}));
-
-/* ── Theme toggle ───────────────────────────────────────────────────────── */
-(function() {
-  const savedTheme = localStorage.getItem('legimap-theme') || 'dark';
-  applyTheme(savedTheme);
-
-  $('theme-toggle').addEventListener('click', () => {
-    const current = document.body.getAttribute('data-theme') || 'dark';
-    applyTheme(current === 'dark' ? 'light' : 'dark');
-  });
-
-  function applyTheme(theme) {
-    document.body.setAttribute('data-theme', theme);
-    localStorage.setItem('legimap-theme', theme);
-    $('toggle-icon').textContent  = theme === 'dark' ? '☀' : '🌙';
-    $('toggle-label').textContent = theme === 'dark' ? 'Light' : 'Dark';
-  }
-})();
 </script>
 </body>
 </html>

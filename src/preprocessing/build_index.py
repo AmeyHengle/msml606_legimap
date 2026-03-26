@@ -105,7 +105,7 @@ def build_index(
 
 
 if __name__ == "__main__":
-    path = sys.argv[1] if len(sys.argv) > 1 else "data/toy_cases.jsonl"
+    path = sys.argv[1] if len(sys.argv) > 1 else "data/legimap_1M.jsonl"
 
     table, tree = build_index(path)
 

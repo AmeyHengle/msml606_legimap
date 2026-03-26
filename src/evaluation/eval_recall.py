@@ -98,7 +98,7 @@ def precision_at_k(results, relevant_ids: set, k: int) -> float:
 
 
 def run_evaluation(
-    data_path: str = "data/toy_cases.jsonl",
+    data_path: str = "data/legimap_1M.jsonl",
     k_values: list = None,
     max_depth: int = 3,
     in_degree_weight: float = 0.2,

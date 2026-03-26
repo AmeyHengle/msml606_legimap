@@ -2,9 +2,7 @@
 ingest.py — streaming reader for CAP-format JSONL and JSON array files.
 
 I wrote this as a generator so the pipeline can handle arbitrarily large
-files without loading everything into memory at once. For the toy dataset
-it doesn't matter, but it's the right pattern for the full 6.7M-record
-CAP corpus.
+files without loading everything into memory at once. 
 
 Supports two formats:
   - JSONL (one JSON object per line) — preferred for large datasets
@@ -73,7 +71,7 @@ def count_records(path: str) -> int:
 
 if __name__ == "__main__":
     import sys
-    path = sys.argv[1] if len(sys.argv) > 1 else "data/toy_cases.jsonl"
+    path = sys.argv[1] if len(sys.argv) > 1 else "data/legimap_1M.jsonl"
 
     print(f"Streaming records from: {path}")
     print("-" * 40)

@@ -2,7 +2,7 @@
 eval_hash.py — verifies the hash table meets the proposal's O(1) metric.
 
 Three tests:
-  1. Live stats on the toy dataset (load factor, collision rate, lookups)
+  1. Live stats on the dataset (load factor, collision rate, lookups)
   2. Stress test: insert 10,000 synthetic keys, verify all are retrievable
   3. Timing benchmark: measure avg lookup time at 100, 1k, and 10k entries
      to confirm it stays roughly constant (O(1) behaviour)
@@ -40,8 +40,8 @@ def _synthetic_key() -> str:
     return f"{random.randint(1, 600)}US{random.randint(1, 999)}"
 
 
-def test_live_dataset(data_path: str = "data/toy_cases.jsonl") -> None:
-    _print_section("TEST 1 — Live dataset stats (toy_cases.jsonl)")
+def test_live_dataset(data_path: str = "data/legimap_1M.jsonl") -> None:
+    _print_section("TEST 1 — Live dataset stats (legimap_1M.jsonl)")
 
     table, _ = build_index(data_path)
     stats    = table.collision_stats()

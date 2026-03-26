@@ -156,7 +156,7 @@ if __name__ == "__main__":
 
     from src.preprocessing.build_index import build_index
 
-    path = "data/toy_cases.jsonl"
+    path = "data/legimap_1M.jsonl"
     print(f"Building index from: {path}\n")
     table, tree = build_index(path)
 

@@ -50,6 +50,7 @@ _stats    = {}
 
 
 def _build_startup_index(data_path: str = "data/toy_cases.jsonl") -> None:
+    
     """
     Build the hash table and N-ary tree from the toy dataset.
     Called once when the Flask app starts.
@@ -272,6 +273,7 @@ if __name__ == "__main__":
     # Resolve the data path relative to the project root, not this file's dir
     project_root = os.path.join(os.path.dirname(__file__), "..", "..")
     data_path    = os.path.join(project_root, "data", "toy_cases.jsonl")
+    # data_path = os.path.join(project_root, "data", "legimap_1M.jsonl")
     data_path    = os.path.normpath(data_path)
 
     _build_startup_index(data_path)
