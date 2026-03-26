@@ -12,7 +12,7 @@
 ## Setup
 
 ```bash
-git clone https://github.com/<your-username>/legimap.git
+git clone https://github.com/AmeyHengle/legimap.git
 cd legimap
 
 python -m venv venv
