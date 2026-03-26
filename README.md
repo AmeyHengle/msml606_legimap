@@ -1,5 +1,7 @@
 # MSML606 Project - LegiMap
 
+![LegiMap UI](UI.png)
+
 ## Requirements
 
 - Python 3.9+
